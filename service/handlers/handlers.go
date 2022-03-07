@@ -12,7 +12,7 @@ func JsonDecorator(ctx context.Context, request interface{}) (interface{}, error
 	reqBody := request.(*body.JsonReq)
 	if reqBody.JsonMap != nil {
 		respJson := reqBody.JsonMap
-		err := operation.DealJson(reqBody.Name, respJson)
+		err := operation.DecoratorJsonByRule(reqBody.Name, respJson)
 		if err != nil {
 			respBody.FailResp(400, err.Error())
 		} else {
@@ -22,7 +22,7 @@ func JsonDecorator(ctx context.Context, request interface{}) (interface{}, error
 	} else if reqBody.JsonSlice != nil {
 		var respList []interface{}
 		for _, j := range reqBody.JsonSlice {
-			if err := operation.DealJson(reqBody.Name, j); err != nil {
+			if err := operation.DecoratorJsonByRule(reqBody.Name, j); err != nil {
 				respBody.FailResp(400, err.Error())
 				return respBody, nil
 			}

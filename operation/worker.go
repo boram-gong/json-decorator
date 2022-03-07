@@ -55,9 +55,9 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 	return nil
 }
 
-func DealJson(name string, jsonMap interface{}) error {
+func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 	var (
-		rules      = rule.AllRule.Load(name)
+		rules      = rule.AllRule.Load(ruleName)
 		split      = false
 		rightValue interface{}
 	)
