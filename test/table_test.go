@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"github.com/boram-gong/json-decorator/common"
 	"github.com/boram-gong/json-decorator/operation"
 	"github.com/boram-gong/json-decorator/rule"
 	json "github.com/json-iterator/go"
@@ -548,17 +547,18 @@ func TestTable(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt.TestRule.MakeRule()
-		work(tt.TestRule, tt.Json)
-
-		getResult := Struct2String(tt.Json, tt.ResultType)
-		if strings.Compare(getResult, tt.RealResult) != 0 {
-			fmt.Printf("[%v] %v变为%v，结果:%v fail!\n", tt.TestName, tt.Source, tt.RealResult, getResult)
-			t.Fail()
-			return
+		if err := operation.DecoratorJson([]*rule.Rule{tt.TestRule}, tt.Json); err != nil {
+			fmt.Printf("[%v] 规则错误: %v \n", tt.TestName, err)
 		} else {
-			// fmt.Printf("[%v] %v变为%v，结果:%v success!\n", tt.TestName, tt.Source, tt.RealResult, getResult)
-			fmt.Printf("[%v] success!\n", tt.TestName)
+			getResult := Struct2String(tt.Json, tt.ResultType)
+			if strings.Compare(getResult, tt.RealResult) != 0 {
+				fmt.Printf("[%v] %v变为%v，结果:%v fail!\n", tt.TestName, tt.Source, tt.RealResult, getResult)
+				t.Fail()
+				return
+			} else {
+				// fmt.Printf("[%v] %v变为%v，结果:%v success!\n", tt.TestName, tt.Source, tt.RealResult, getResult)
+				fmt.Printf("[%v] success!\n", tt.TestName)
+			}
 		}
 	}
 }
@@ -579,45 +579,4 @@ func Struct2String(data interface{}, Type string) string {
 
 	}
 	return string(body)
-}
-
-func work(r *rule.Rule, jsonMap interface{}) {
-	var (
-		split      = false
-		rightValue interface{}
-	)
-	if r.AT {
-		atl := r.ATList[""]
-		if len(atl) != 0 {
-			realData := operation.GetJsonValue(atl, jsonMap, r.Del)
-			if r.Split && common.Interface2Slice(realData) != nil {
-				split = true
-			}
-			rightValue = realData
-		} else {
-			realData := r.Content
-			for k, at := range r.ATList {
-				realData.(map[string]interface{})[k] = operation.GetJsonValue(at, jsonMap, r.Del)
-			}
-			rightValue = realData
-		}
-		operation.SaveJsonMap(r.KeyList, jsonMap, r.RealOperation, split, rightValue)
-	} else {
-		if r.RealOperation == "rename" {
-			rightValue = operation.GetJsonValue(r.KeyList, jsonMap, r.Del)
-			if r.Split && common.Interface2Slice(rightValue) != nil {
-				for _, value := range common.Interface2Slice(rightValue) {
-					operation.SaveJsonMap(nil, value, r.RealOperation, split, rightValue)
-				}
-			} else {
-				atl := r.ATList[""]
-				operation.SaveJsonMap(atl, jsonMap, r.RealOperation, split, rightValue)
-			}
-		} else if r.RealOperation == "delete" {
-			operation.GetJsonValue(r.KeyList, jsonMap, true)
-		} else {
-			rightValue = r.Content
-			operation.SaveJsonMap(r.KeyList, jsonMap, r.RealOperation, split, rightValue)
-		}
-	}
 }
