@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
-	"json-decorator/service/handlers"
-	"json-decorator/service/svc"
+	"github.com/boram-gong/json-decorator/service/handlers"
+	"github.com/boram-gong/json-decorator/service/svc"
 	"os"
 	"os/signal"
 	"syscall"
