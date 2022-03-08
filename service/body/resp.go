@@ -1,6 +1,9 @@
 package body
 
+import "sync"
+
 var (
+	RespPool    = sync.Pool{New: newCommonResp}
 	SuccessResp = &RespHead{
 		Code: 200,
 		Msg:  "成功",
@@ -24,8 +27,10 @@ func (r *CommonResp) FailResp(code int, err string) {
 	}
 }
 
-func NewCommonResp() *CommonResp {
-	respBody := new(CommonResp)
-	respBody.RespHead = SuccessResp
-	return respBody
+func (r *CommonResp) Init() {
+	r.RespHead = SuccessResp
+}
+
+func newCommonResp() interface{} {
+	return new(CommonResp)
 }

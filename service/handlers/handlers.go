@@ -8,7 +8,8 @@ import (
 )
 
 func JsonDecorator(ctx context.Context, request interface{}) (interface{}, error) {
-	respBody := body.NewCommonResp()
+	respBody := body.RespPool.Get().(*body.CommonResp)
+	respBody.Init()
 	reqBody := request.(*body.JsonReq)
 	if reqBody.JsonMap != nil {
 		respJson := reqBody.JsonMap
@@ -18,7 +19,6 @@ func JsonDecorator(ctx context.Context, request interface{}) (interface{}, error
 		} else {
 			respBody.Data = respJson
 		}
-		return respBody, nil
 	} else if reqBody.JsonSlice != nil {
 		var respList []interface{}
 		for _, j := range reqBody.JsonSlice {
@@ -29,14 +29,17 @@ func JsonDecorator(ctx context.Context, request interface{}) (interface{}, error
 			respList = append(respList, j)
 		}
 		respBody.Data = respList
-		return respBody, nil
 	} else {
 		respBody.FailResp(404, "no data")
-		return respBody, nil
 	}
+	body.RespPool.Put(respBody)
+	return respBody, nil
 }
 
 func ReCfg(ctx context.Context, request interface{}) (interface{}, error) {
 	rule.GetRuleCfg()
-	return body.NewCommonResp(), nil
+	respBody := body.RespPool.Get().(*body.CommonResp)
+	respBody.Init()
+	body.RespPool.Put(respBody)
+	return respBody, nil
 }

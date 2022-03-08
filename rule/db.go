@@ -10,7 +10,7 @@ import (
 var (
 	PClient dbt.DB
 	pCfg    = &dbt.CfgDB{
-		Host:        "192.168.0.55",
+		Host:        "114.67.78.94",
 		Port:        5432,
 		User:        "postgres",
 		Password:    "Wayz2022",
