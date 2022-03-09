@@ -10,6 +10,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 	if len(keyList) == 0 || len(keyList) == 1 && keyList[0].Key == "" {
 		// 表示直接在顶级操作
 		if op == INSERT && common.Interface2Map(rightValue) != nil && common.Interface2Map(jsonMap) != nil {
+			// 表示直接在顶级插入一个键值对
 			for k, v := range common.Interface2Map(rightValue) {
 				jsonMap.(map[string]interface{})[k] = v
 			}
@@ -29,8 +30,13 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 						case REPLACE, RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
 						case INSERT, MOVE:
-							for k, v := range common.Interface2Map(rightValue) {
-								jsonMap.(map[string]interface{})[key.Key].(map[string]interface{})[k] = v
+							kv := common.Interface2Map(rightValue)
+							if kv == nil {
+								return errors.New("insert/move content type err, must kv")
+							} else {
+								for k, v := range kv {
+									jsonMap.(map[string]interface{})[key.Key].(map[string]interface{})[k] = v
+								}
 							}
 						}
 						return nil

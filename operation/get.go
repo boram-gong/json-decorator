@@ -23,27 +23,20 @@ func GetJsonValue(keyList []rule.KeyStruct, jsonMap interface{}, del bool) inter
 						jsonMap = common.Interface2Map(jsonMap)[key.Key]
 						break
 					}
-				case 1:
+				case 1: // 当只有一个索引的时候, 直接处理map的key值，不需要深层处理list
 					if len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) == 0 {
+						// 越界取值取的结果为nil
 						return nil
 					}
-					// 当只有一个索引的时候, 直接调key的值处理，不需要深层处理list
-					if i == len(keyList)-1 { // 当为最后一个的时候可以直接返回
+					if i == len(keyList)-1 {
+						// 当为最后一个的时，取到结果直接返回
 						index := key.Index[0]
 						if index == -1 {
 							index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
 						}
 						if del {
 							result := common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
-							var temp []interface{}
-							for n, v := range common.Interface2Map(jsonMap)[key.Key].([]interface{}) {
-								if n == index {
-									continue
-								} else {
-									temp = append(temp, v)
-								}
-							}
-							common.Interface2Map(jsonMap)[key.Key] = temp
+							common.Interface2Map(jsonMap)[key.Key] = makeSlice(common.Interface2Map(jsonMap)[key.Key].([]interface{}), index)
 							return result
 						} else {
 							return common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
@@ -66,7 +59,8 @@ func GetJsonValue(keyList []rule.KeyStruct, jsonMap interface{}, del bool) inter
 					jsonMap = common.Interface2Map(jsonMap)[key.Key]
 				}
 			}
-		default: // 当不为map类型时，就得终止循环
+		default:
+			// 当不为map类型时，得终止循环
 			if i == len(keyList)-1 {
 				return jsonMap
 			} else {
@@ -78,38 +72,33 @@ func GetJsonValue(keyList []rule.KeyStruct, jsonMap interface{}, del bool) inter
 }
 
 func getDeepSliceValue(source *interface{}, allIndex []int, del bool, nextKey []rule.KeyStruct) interface{} {
-	for i, n := range allIndex {
+	for i, index := range allIndex {
 		switch (*source).(type) {
 		case []interface{}: // 必须为此类型
+			if len((*source).([]interface{})) == 0 {
+				return nil
+			}
 			// 处理索引
-			if n == -1 {
-				if len((*source).([]interface{})) > 0 {
-					n = len((*source).([]interface{})) - 1
-				} else {
-					n = 0
-				}
+			if index == -1 {
+				index = len((*source).([]interface{})) - 1
 			}
 			// 判断索引长度
-			if len((*source).([]interface{})) > n { // 当前查询的值是在list里面的
-				if i == len(allIndex)-1 { // 最后一层
-					if len(nextKey) > 0 { // 最后一层的后面，要有新的kv， 继续嵌套查询
-						return GetJsonValue(nextKey, (*source).([]interface{})[n], del)
+			if len((*source).([]interface{})) > index { // 越界合法判断
+				if i == len(allIndex)-1 {
+					// 索引查询的最后一层
+					if len(nextKey) > 0 {
+						//  索引查询的最后一层后面还有key（list[1][0].key），继续嵌套查询
+						return GetJsonValue(nextKey, (*source).([]interface{})[index], del)
 					} else {
-						result := (*source).([]interface{})[n]
+						result := (*source).([]interface{})[index]
 						if del {
-							var temp []interface{}
-							for index, v := range (*source).([]interface{}) {
-								if index == n {
-									continue
-								}
-								temp = append(temp, v)
-							}
-							(*source) = temp
+							(*source) = makeSlice((*source).([]interface{}), index)
 						}
 						return result
 					}
 				} else {
-					source = &(*source).([]interface{})[n]
+					// 非最后一层
+					source = &(*source).([]interface{})[index]
 				}
 			} else {
 				// 越界

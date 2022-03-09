@@ -36,13 +36,13 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 				return err
 			}
 		} else {
-			if r.RealOperation == "rename" {
+			if r.RealOperation == RENAME {
 				rightValue = GetJsonValue(r.KeyList, jsonMap, r.Del)
 				atl := r.ATList[""]
 				if err := SaveJsonMap(atl, jsonMap, r.RealOperation, split, rightValue); err != nil {
 					return err
 				}
-			} else if r.RealOperation == "delete" {
+			} else if r.RealOperation == DELETE {
 				GetJsonValue(r.KeyList, jsonMap, true)
 			} else {
 				rightValue = r.Content
