@@ -16,7 +16,10 @@ import (
 func NewEndpoints() svc.Endpoints {
 	endpoints := svc.Endpoints{
 		JsonDecoratorEndpoint: handlers.JsonDecorator,
-		ReCfgEndpoint:         handlers.ReCfg,
+		ReRuleEndpoint:        handlers.ReRule,
+		ReadRuleEndpoint:      handlers.ReadRule,
+		SaveRuleEndpoint:      handlers.SaveRule,
+		DeleteRuleEndpoint:    handlers.DeleteRule,
 	}
 	return endpoints
 }

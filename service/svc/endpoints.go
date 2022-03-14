@@ -6,5 +6,8 @@ import (
 
 type Endpoints struct {
 	JsonDecoratorEndpoint endpoint.Endpoint
-	ReCfgEndpoint         endpoint.Endpoint
+	SaveRuleEndpoint      endpoint.Endpoint
+	ReRuleEndpoint        endpoint.Endpoint
+	DeleteRuleEndpoint    endpoint.Endpoint
+	ReadRuleEndpoint      endpoint.Endpoint
 }

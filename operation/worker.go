@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/boram-gong/json-decorator/common"
 	"github.com/boram-gong/json-decorator/rule"
+	"strings"
+	"time"
 )
 
 func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
@@ -16,6 +18,22 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 		r.MakeRule()
 		if r.ERR != "" {
 			return errors.New(fmt.Sprintf("%v %v %v %v", r.Key, r.Operation, r.Content, r.ERR))
+		}
+		if r.Stat != 1 {
+			return errors.New("rule lapsed")
+		}
+		if r.StartTime != "" && r.EndTime != "" {
+			var now string
+			if strings.Contains(r.StartTime, "-") {
+				now = time.Now().Format("2006-01-02 15:04:05")
+			} else {
+				now = time.Now().Format("15:04:05")
+			}
+			if now >= r.StartTime && now <= r.EndTime {
+
+			} else {
+				return errors.New("rule lapsed")
+			}
 		}
 		if r.AT {
 			atl := r.ATList[""]
@@ -36,13 +54,13 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 				return err
 			}
 		} else {
-			if r.RealOperation == RENAME {
+			if r.RealOperation == common.RENAME {
 				rightValue = GetJsonValue(r.KeyList, jsonMap, r.Del)
 				atl := r.ATList[""]
 				if err := SaveJsonMap(atl, jsonMap, r.RealOperation, split, rightValue); err != nil {
 					return err
 				}
-			} else if r.RealOperation == DELETE {
+			} else if r.RealOperation == common.DELETE {
 				GetJsonValue(r.KeyList, jsonMap, true)
 			} else {
 				rightValue = r.Content
@@ -64,6 +82,22 @@ func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 	for _, r := range rules {
 		if r.ERR != "" {
 			return errors.New(fmt.Sprintf("%v %v %v %v", r.Key, r.Operation, r.Content, r.ERR))
+		}
+		if r.Stat != 1 {
+			return errors.New("rule lapsed")
+		}
+		if r.StartTime != "" && r.EndTime != "" {
+			var now string
+			if strings.Contains(r.StartTime, "-") {
+				now = time.Now().Format("2006-01-02 15:04:05")
+			} else {
+				now = time.Now().Format("15:04:05")
+			}
+			if now >= r.StartTime && now <= r.EndTime {
+
+			} else {
+				return errors.New("rule lapsed")
+			}
 		}
 		if r.AT {
 			// 如果存在 @

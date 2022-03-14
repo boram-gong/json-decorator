@@ -28,22 +28,22 @@ func GetJsonValue(keyList []rule.KeyStruct, jsonMap interface{}, del bool) inter
 						// 越界取值取的结果为nil
 						return nil
 					}
+					index := key.Index[0]
+					if index == -1 {
+						index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
+					}
 					if i == len(keyList)-1 {
 						// 当为最后一个的时，取到结果直接返回
-						index := key.Index[0]
-						if index == -1 {
-							index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
-						}
 						if del {
 							result := common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
-							common.Interface2Map(jsonMap)[key.Key] = makeSlice(common.Interface2Map(jsonMap)[key.Key].([]interface{}), index)
+							common.Interface2Map(jsonMap)[key.Key] = common.MakeSlice(common.Interface2Map(jsonMap)[key.Key].([]interface{}), index)
 							return result
 						} else {
 							return common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
 						}
 					} else {
 						// 非最后一个的时候我们进入新的循环
-						return GetJsonValue(keyList[i+1:], common.Interface2Map(jsonMap)[key.Key].([]interface{})[key.Index[0]], del)
+						return GetJsonValue(keyList[i+1:], common.Interface2Map(jsonMap)[key.Key].([]interface{})[index], del)
 					}
 				default:
 					// 当有多个索引的时候, 深度处理list
@@ -92,7 +92,7 @@ func getDeepSliceValue(source *interface{}, allIndex []int, del bool, nextKey []
 					} else {
 						result := (*source).([]interface{})[index]
 						if del {
-							(*source) = makeSlice((*source).([]interface{}), index)
+							(*source) = common.MakeSlice((*source).([]interface{}), index)
 						}
 						return result
 					}

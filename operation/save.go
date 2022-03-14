@@ -9,7 +9,7 @@ import (
 func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split bool, rightValue interface{}) error {
 	if len(keyList) == 0 || len(keyList) == 1 && keyList[0].Key == "" {
 		// 表示直接在顶级操作
-		if op == INSERT && common.Interface2Map(rightValue) != nil && common.Interface2Map(jsonMap) != nil {
+		if op == common.INSERT && common.Interface2Map(rightValue) != nil && common.Interface2Map(jsonMap) != nil {
 			// 表示直接在顶级插入一个键值对
 			for k, v := range common.Interface2Map(rightValue) {
 				jsonMap.(map[string]interface{})[k] = v
@@ -27,9 +27,9 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					switch data.(type) {
 					case map[string]interface{}:
 						switch op {
-						case REPLACE, RENAME:
+						case common.REPLACE, common.RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
-						case INSERT, MOVE:
+						case common.INSERT, common.MOVE:
 							kv := common.Interface2Map(rightValue)
 							if kv == nil {
 								return errors.New("insert/move content type err, must kv")
@@ -43,16 +43,16 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					case []interface{}:
 						if len(key.Index) == 0 {
 							switch op {
-							case REPLACE:
+							case common.REPLACE:
 								jsonMap.(map[string]interface{})[key.Key] = rightValue
-							case TAIL:
+							case common.TAIL:
 								if split {
 									data = append(data.([]interface{}), common.Interface2Slice(rightValue)...)
 								} else {
 									data = append(data.([]interface{}), rightValue)
 								}
 								jsonMap.(map[string]interface{})[key.Key] = data
-							case HEAD:
+							case common.HEAD:
 								temp := data.([]interface{})
 								if split {
 									data = append(common.Interface2Slice(rightValue), temp...)
@@ -64,7 +64,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 							}
 							return nil
 						} else {
-							if len(key.Index) == 1 && op == REPLACE {
+							if len(key.Index) == 1 && op == common.REPLACE {
 								if key.Index[0] < len(data.([]interface{})) {
 									jsonMap.(map[string]interface{})[key.Key].([]interface{})[key.Index[0]] = rightValue
 								} else {
@@ -78,11 +78,11 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 						}
 					case string:
 						switch op {
-						case HEAD:
+						case common.HEAD:
 							jsonMap.(map[string]interface{})[key.Key] = common.Interface2String(rightValue) + common.Interface2String(data)
-						case TAIL:
+						case common.TAIL:
 							jsonMap.(map[string]interface{})[key.Key] = common.Interface2String(data) + common.Interface2String(rightValue)
-						case REPLACE, RENAME:
+						case common.REPLACE, common.RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
 						}
 						return nil
@@ -93,13 +93,19 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					switch len(key.Index) {
 					case 0:
 						switch op {
-						case INSERT, MOVE, RENAME:
+						case common.INSERT, common.MOVE, common.RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
+						case common.TAIL, common.HEAD:
+							if split {
+								jsonMap.(map[string]interface{})[key.Key] = rightValue
+							} else {
+								jsonMap.(map[string]interface{})[key.Key] = []interface{}{rightValue}
+							}
 						}
 						return nil
 					case 1:
 						switch op {
-						case TAIL, HEAD:
+						case common.TAIL, common.HEAD:
 							if split {
 								jsonMap.(map[string]interface{})[key.Key] = rightValue
 							} else {
@@ -118,9 +124,16 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					case 0:
 						(jsonMap) = (jsonMap).(map[string]interface{})[key.Key]
 					case 1:
+						index := key.Index[0]
+						if index < 0 {
+							index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
+							if index < 0 {
+								return errors.New(key.Key + " index out")
+							}
+						}
 						return SaveJsonMap(
 							keyList[i+1:],
-							common.Interface2Map(jsonMap)[key.Key].([]interface{})[key.Index[0]],
+							common.Interface2Map(jsonMap)[key.Key].([]interface{})[index],
 							op, split, rightValue)
 
 					default:
@@ -158,7 +171,7 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 					}
 					switch (*source).([]interface{})[n].(type) {
 					case []interface{}:
-						if op == TAIL {
+						if op == common.TAIL {
 							if split {
 								(*source).([]interface{})[n] = append(
 									(*source).([]interface{})[n].([]interface{}),
@@ -170,7 +183,7 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 									value,
 								)
 							}
-						} else if op == HEAD {
+						} else if op == common.HEAD {
 							temp := (*source).([]interface{})[n].([]interface{})
 							if split {
 								(*source).([]interface{})[n] = append(
@@ -184,17 +197,17 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 									temp...,
 								)
 							}
-						} else if op == REPLACE {
+						} else if op == common.REPLACE {
 							(*source).([]interface{})[n] = value
 						}
 					case map[string]interface{}:
 						return SaveJsonMap(nil, (*source).([]interface{})[n], op, split, value) == nil
 					case string:
-						if op == TAIL {
+						if op == common.TAIL {
 							(*source).([]interface{})[n] = (*source).([]interface{})[n].(string) + common.Interface2String(value)
-						} else if op == HEAD {
+						} else if op == common.HEAD {
 							(*source).([]interface{})[n] = common.Interface2String(value) + (*source).([]interface{})[n].(string)
-						} else if op == REPLACE {
+						} else if op == common.REPLACE {
 							(*source).([]interface{})[n] = value
 						}
 					}

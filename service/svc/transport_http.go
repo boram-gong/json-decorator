@@ -51,9 +51,41 @@ func MakeHTTPHandler(engine *gin.Engine, endpoints Endpoints) {
 			serverOptions...,
 		).ServeHTTP(c.Writer, c.Request)
 	})
-	engine.Handle("GET", "/lgi/responseAdapter/reCfg", func(c *gin.Context) {
+	engine.Handle("GET", "/lgi/responseAdapter/rule", func(c *gin.Context) {
 		svc_http.NewServer(
-			endpoints.ReCfgEndpoint,
+			endpoints.ReadRuleEndpoint,
+			svc_http.WrapS(c, DecodeRuleId),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
+	engine.Handle("POST", "/lgi/responseAdapter/rule", func(c *gin.Context) {
+		svc_http.NewServer(
+			endpoints.SaveRuleEndpoint,
+			svc_http.WrapS(c, DecodePostRule),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
+	engine.Handle("PUT", "/lgi/responseAdapter/rule", func(c *gin.Context) {
+		svc_http.NewServer(
+			endpoints.SaveRuleEndpoint,
+			svc_http.WrapS(c, DecodePutRule),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
+	engine.Handle("DELETE", "/lgi/responseAdapter/rule", func(c *gin.Context) {
+		svc_http.NewServer(
+			endpoints.DeleteRuleEndpoint,
+			svc_http.WrapS(c, DecodeRuleId),
+			EncodeHTTPGenericResponse,
+			serverOptions...,
+		).ServeHTTP(c.Writer, c.Request)
+	})
+	engine.Handle("GET", "/lgi/responseAdapter/re", func(c *gin.Context) {
+		svc_http.NewServer(
+			endpoints.ReRuleEndpoint,
 			svc_http.WrapS(c, DecodeNull),
 			EncodeHTTPGenericResponse,
 			serverOptions...,

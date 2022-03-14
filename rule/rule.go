@@ -14,7 +14,6 @@ type KeyStruct struct {
 }
 
 type Rule struct {
-	Id            int                    `json:"id"`
 	Key           string                 `json:"key"`
 	Operation     string                 `json:"operation"`
 	Content       interface{}            `json:"content"`
@@ -24,6 +23,9 @@ type Rule struct {
 	AT            bool                   `json:"-"`
 	ATList        map[string][]KeyStruct `json:"-"`
 	Split         bool                   `json:"-"`
+	Stat          int                    `json:"-"`
+	StartTime     string                 `json:"-"`
+	EndTime       string                 `json:"-"`
 	Del           bool                   `json:"-"`
 }
 
@@ -182,7 +184,6 @@ func (m *AllRuleSafeMap) Store(ruleName string, r *Rule) {
 	m.Lock()
 	defer m.Unlock()
 	r.MakeRule()
-
 	v, ok := m.M[ruleName]
 	if ok {
 		v = append(v, r)

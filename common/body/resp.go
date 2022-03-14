@@ -29,6 +29,7 @@ func (r *CommonResp) FailResp(code int, err string) {
 
 func (r *CommonResp) Init() {
 	r.RespHead = SuccessResp
+	r.Data = nil
 }
 
 func newCommonResp() interface{} {

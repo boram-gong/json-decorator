@@ -1,4 +1,4 @@
-package operation
+package common
 
 import (
 	"sync"
@@ -20,7 +20,7 @@ var TempSlicePool = sync.Pool{
 	},
 }
 
-func makeSlice(l []interface{}, index int) []interface{} {
+func MakeSlice(l []interface{}, index int) []interface{} {
 	temp := TempSlicePool.Get().([]interface{})
 	TempSlicePool.Put([]interface{}{})
 	for n, v := range l {
