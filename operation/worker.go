@@ -75,7 +75,7 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 
 func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 	var (
-		rules      = rule.AllRule.Load(ruleName)
+		rules      = rule.AllRule.Load().(*rule.AllRuleSafeMap).Load(ruleName)
 		split      = false
 		rightValue interface{}
 	)
@@ -100,7 +100,7 @@ func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 			}
 		}
 		if r.AT {
-			// 如果存在 @
+			// 如果存在 @ 取值
 			atl := r.ATList[""] // r.ATList[""]存放着只含1个@的key
 			if len(atl) != 0 {
 				// 只含1个@
@@ -121,13 +121,13 @@ func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 				return err
 			}
 		} else {
-			if r.RealOperation == "rename" {
+			if r.RealOperation == common.RENAME {
 				rightValue = GetJsonValue(r.KeyList, jsonMap, r.Del)
 				atl := r.ATList[""]
 				if err := SaveJsonMap(atl, jsonMap, r.RealOperation, split, rightValue); err != nil {
 					return err
 				}
-			} else if r.RealOperation == "delete" {
+			} else if r.RealOperation == common.DELETE {
 				GetJsonValue(r.KeyList, jsonMap, true)
 			} else {
 				rightValue = r.Content

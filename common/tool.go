@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func simpleCalculator(data1 interface{}, operation string, data2 interface{}) interface{} {
+func SimpleCalculator(data1 interface{}, operation string, data2 interface{}) interface{} {
 	switch operation {
 	case "+":
 		switch data1.(type) {

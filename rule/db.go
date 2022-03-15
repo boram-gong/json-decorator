@@ -46,7 +46,7 @@ func query(querySql string) (result []map[string]interface{}) {
 }
 
 func ReAllRule() []body.SaveRuleReq {
-	AllRule.Init()
+	ruleMap := NewAllRuleSafeMap()
 	var respData []body.SaveRuleReq
 	result := query("SELECT * from rule")
 	for _, m := range result {
@@ -64,23 +64,18 @@ func ReAllRule() []body.SaveRuleReq {
 		})
 		for _, d := range data {
 			r := &Rule{
-				Key:           d.Key,
-				Operation:     d.Operation,
-				Content:       d.Content,
-				RealOperation: "",
-				KeyList:       nil,
-				AT:            false,
-				ATList:        nil,
-				Split:         false,
-				Del:           false,
-				Stat:          common.Interface2Int(m["stat"]),
-				StartTime:     common.Interface2String(m["start_time"]),
-				EndTime:       common.Interface2String(m["end_time"]),
+				Key:       d.Key,
+				Operation: d.Operation,
+				Content:   d.Content,
+				Stat:      common.Interface2Int(m["stat"]),
+				StartTime: common.Interface2String(m["start_time"]),
+				EndTime:   common.Interface2String(m["end_time"]),
 			}
 			ruleName := fmt.Sprintf("%v", m["rule_name"])
-			AllRule.Store(ruleName, r)
+			ruleMap.UnSafeStore(ruleName, r)
 		}
 	}
+	AllRule.Store(ruleMap)
 	return respData
 }
 
