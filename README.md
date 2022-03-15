@@ -11,6 +11,9 @@ type Rule struct {
 	Key           string                 `json:"key"`
 	Operation     string                 `json:"operation"`
 	Content       interface{}            `json:"content"`
+	Stat          int                    `json:"stat"`
+	StartTime     string                 `json:"start_time"`
+	EndTime       string                 `json:"end_time"`
 }
 ```
 

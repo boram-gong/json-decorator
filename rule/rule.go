@@ -23,9 +23,9 @@ type Rule struct {
 	AT            bool                   `json:"-"`
 	ATList        map[string][]KeyStruct `json:"-"`
 	Split         bool                   `json:"-"`
-	Stat          int                    `json:"-"`
-	StartTime     string                 `json:"-"`
-	EndTime       string                 `json:"-"`
+	Stat          int                    `json:"stat"`
+	StartTime     string                 `json:"start_time"`
+	EndTime       string                 `json:"end_time"`
 	Del           bool                   `json:"-"`
 }
 
