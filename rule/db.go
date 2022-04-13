@@ -24,7 +24,7 @@ var (
 )
 
 func InitDB() {
-	PClient = dbt_pg.NewPgClient(pCfg)
+	PClient, _ = dbt_pg.NewPgClient(pCfg)
 }
 
 func query(querySql string) (result []map[string]interface{}) {
