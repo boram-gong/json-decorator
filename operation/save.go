@@ -2,6 +2,7 @@ package operation
 
 import (
 	"errors"
+	dbt "github.com/boram-gong/db_tool"
 	"github.com/boram-gong/json-decorator/common"
 	"github.com/boram-gong/json-decorator/rule"
 )
@@ -9,9 +10,9 @@ import (
 func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split bool, rightValue interface{}) error {
 	if len(keyList) == 0 || len(keyList) == 1 && keyList[0].Key == "" {
 		// 表示直接在顶级操作
-		if op == common.INSERT && common.Interface2Map(rightValue) != nil && common.Interface2Map(jsonMap) != nil {
+		if op == common.INSERT && dbt.Interface2Map(rightValue) != nil && dbt.Interface2Map(jsonMap) != nil {
 			// 表示直接在顶级插入一个键值对
-			for k, v := range common.Interface2Map(rightValue) {
+			for k, v := range dbt.Interface2Map(rightValue) {
 				jsonMap.(map[string]interface{})[k] = v
 			}
 			return nil
@@ -30,7 +31,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 						case common.REPLACE, common.RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
 						case common.INSERT, common.MOVE:
-							kv := common.Interface2Map(rightValue)
+							kv := dbt.Interface2Map(rightValue)
 							if kv == nil {
 								return errors.New("insert/move content type err, must kv")
 							} else {
@@ -47,7 +48,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 								jsonMap.(map[string]interface{})[key.Key] = rightValue
 							case common.TAIL:
 								if split {
-									data = append(data.([]interface{}), common.Interface2Slice(rightValue)...)
+									data = append(data.([]interface{}), dbt.Interface2Slice(rightValue)...)
 								} else {
 									data = append(data.([]interface{}), rightValue)
 								}
@@ -55,7 +56,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 							case common.HEAD:
 								temp := data.([]interface{})
 								if split {
-									data = append(common.Interface2Slice(rightValue), temp...)
+									data = append(dbt.Interface2Slice(rightValue), temp...)
 								} else {
 									data = []interface{}{rightValue}
 									data = append(data.([]interface{}), temp...)
@@ -71,7 +72,7 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 									return errors.New(key.Key + " index out")
 								}
 							} else {
-								source := common.Interface2Map(jsonMap)[key.Key]
+								source := dbt.Interface2Map(jsonMap)[key.Key]
 								saveDeepSliceValue(&source, rightValue, key.Index, nil, op, split)
 							}
 							return nil
@@ -79,9 +80,9 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					case string:
 						switch op {
 						case common.HEAD:
-							jsonMap.(map[string]interface{})[key.Key] = common.Interface2String(rightValue) + common.Interface2String(data)
+							jsonMap.(map[string]interface{})[key.Key] = dbt.Interface2String(rightValue) + dbt.Interface2String(data)
 						case common.TAIL:
-							jsonMap.(map[string]interface{})[key.Key] = common.Interface2String(data) + common.Interface2String(rightValue)
+							jsonMap.(map[string]interface{})[key.Key] = dbt.Interface2String(data) + dbt.Interface2String(rightValue)
 						case common.REPLACE, common.RENAME:
 							jsonMap.(map[string]interface{})[key.Key] = rightValue
 						}
@@ -126,18 +127,18 @@ func SaveJsonMap(keyList []rule.KeyStruct, jsonMap interface{}, op string, split
 					case 1:
 						index := key.Index[0]
 						if index < 0 {
-							index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
+							index = len(dbt.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
 							if index < 0 {
 								return errors.New(key.Key + " index out")
 							}
 						}
 						return SaveJsonMap(
 							keyList[i+1:],
-							common.Interface2Map(jsonMap)[key.Key].([]interface{})[index],
+							dbt.Interface2Map(jsonMap)[key.Key].([]interface{})[index],
 							op, split, rightValue)
 
 					default:
-						source := common.Interface2Map(jsonMap)[key.Key]
+						source := dbt.Interface2Map(jsonMap)[key.Key]
 						if saveDeepSliceValue(&source, rightValue, key.Index, keyList[i+1:], op, split) {
 							return nil
 						} else {
@@ -175,7 +176,7 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 							if split {
 								(*source).([]interface{})[n] = append(
 									(*source).([]interface{})[n].([]interface{}),
-									common.Interface2Slice(value)...,
+									dbt.Interface2Slice(value)...,
 								)
 							} else {
 								(*source).([]interface{})[n] = append(
@@ -187,7 +188,7 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 							temp := (*source).([]interface{})[n].([]interface{})
 							if split {
 								(*source).([]interface{})[n] = append(
-									common.Interface2Slice(value),
+									dbt.Interface2Slice(value),
 									temp...,
 								)
 							} else {
@@ -204,9 +205,9 @@ func saveDeepSliceValue(source *interface{}, value interface{}, allIndex []int, 
 						return SaveJsonMap(nil, (*source).([]interface{})[n], op, split, value) == nil
 					case string:
 						if op == common.TAIL {
-							(*source).([]interface{})[n] = (*source).([]interface{})[n].(string) + common.Interface2String(value)
+							(*source).([]interface{})[n] = (*source).([]interface{})[n].(string) + dbt.Interface2String(value)
 						} else if op == common.HEAD {
-							(*source).([]interface{})[n] = common.Interface2String(value) + (*source).([]interface{})[n].(string)
+							(*source).([]interface{})[n] = dbt.Interface2String(value) + (*source).([]interface{})[n].(string)
 						} else if op == common.REPLACE {
 							(*source).([]interface{})[n] = value
 						}

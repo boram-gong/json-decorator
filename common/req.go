@@ -1,4 +1,4 @@
-package body
+package common
 
 type JsonReq struct {
 	Name      string                 `json:"name"`

@@ -1,6 +1,7 @@
 package operation
 
 import (
+	dbt "github.com/boram-gong/db_tool"
 	"github.com/boram-gong/json-decorator/common"
 	"github.com/boram-gong/json-decorator/rule"
 )
@@ -10,53 +11,53 @@ func GetJsonValue(keyList []rule.KeyStruct, jsonMap interface{}, del bool) inter
 		switch jsonMap.(type) {
 		case map[string]interface{}:
 			// 判断下一层的类型，主要是为了处理list
-			switch common.Interface2Map(jsonMap)[key.Key].(type) {
+			switch dbt.Interface2Map(jsonMap)[key.Key].(type) {
 			case []interface{}: // 当为list时
 				switch len(key.Index) {
 				case 0:
 					// 不存在索引，意味着此key应该为最后一层
 					if i == len(keyList)-1 && del {
-						temp := common.Interface2Map(jsonMap)[key.Key]
-						delete(common.Interface2Map(jsonMap), key.Key)
+						temp := dbt.Interface2Map(jsonMap)[key.Key]
+						delete(dbt.Interface2Map(jsonMap), key.Key)
 						return temp
 					} else {
-						jsonMap = common.Interface2Map(jsonMap)[key.Key]
+						jsonMap = dbt.Interface2Map(jsonMap)[key.Key]
 						break
 					}
 				case 1: // 当只有一个索引的时候, 直接处理map的key值，不需要深层处理list
-					if len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) == 0 {
+					if len(dbt.Interface2Map(jsonMap)[key.Key].([]interface{})) == 0 {
 						// 越界取值取的结果为nil
 						return nil
 					}
 					index := key.Index[0]
 					if index == -1 {
-						index = len(common.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
+						index = len(dbt.Interface2Map(jsonMap)[key.Key].([]interface{})) - 1
 					}
 					if i == len(keyList)-1 {
 						// 当为最后一个的时，取到结果直接返回
 						if del {
-							result := common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
-							common.Interface2Map(jsonMap)[key.Key] = common.MakeSlice(common.Interface2Map(jsonMap)[key.Key].([]interface{}), index)
+							result := dbt.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
+							dbt.Interface2Map(jsonMap)[key.Key] = common.MakeSlice(dbt.Interface2Map(jsonMap)[key.Key].([]interface{}), index)
 							return result
 						} else {
-							return common.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
+							return dbt.Interface2Map(jsonMap)[key.Key].([]interface{})[index]
 						}
 					} else {
 						// 非最后一个的时候我们进入新的循环
-						return GetJsonValue(keyList[i+1:], common.Interface2Map(jsonMap)[key.Key].([]interface{})[index], del)
+						return GetJsonValue(keyList[i+1:], dbt.Interface2Map(jsonMap)[key.Key].([]interface{})[index], del)
 					}
 				default:
 					// 当有多个索引的时候, 深度处理list
-					source := common.Interface2Map(jsonMap)[key.Key]
+					source := dbt.Interface2Map(jsonMap)[key.Key]
 					return getDeepSliceValue(&source, key.Index, del, keyList[i+1:])
 				}
 			default:
 				if i == len(keyList)-1 && del {
-					temp := common.Interface2Map(jsonMap)[key.Key]
-					delete(common.Interface2Map(jsonMap), key.Key)
+					temp := dbt.Interface2Map(jsonMap)[key.Key]
+					delete(dbt.Interface2Map(jsonMap), key.Key)
 					return temp
 				} else {
-					jsonMap = common.Interface2Map(jsonMap)[key.Key]
+					jsonMap = dbt.Interface2Map(jsonMap)[key.Key]
 				}
 			}
 		default:

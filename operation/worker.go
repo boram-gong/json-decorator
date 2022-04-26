@@ -3,6 +3,7 @@ package operation
 import (
 	"errors"
 	"fmt"
+	dbt "github.com/boram-gong/db_tool"
 	"github.com/boram-gong/json-decorator/common"
 	"github.com/boram-gong/json-decorator/rule"
 	"strings"
@@ -39,7 +40,7 @@ func DecoratorJson(rules []*rule.Rule, jsonMap interface{}) error {
 			atl := r.ATList[""]
 			if len(atl) != 0 {
 				realData := GetJsonValue(atl, jsonMap, r.Del)
-				if r.Split && common.Interface2Slice(realData) != nil {
+				if r.Split && dbt.Interface2Slice(realData) != nil {
 					split = true
 				}
 				rightValue = realData
@@ -105,7 +106,7 @@ func DecoratorJsonByRule(ruleName string, jsonMap interface{}) error {
 			if len(atl) != 0 {
 				// 只含1个@
 				realData := GetJsonValue(atl, jsonMap, r.Del)
-				if r.Split && common.Interface2Slice(realData) != nil {
+				if r.Split && dbt.Interface2Slice(realData) != nil {
 					split = true
 				}
 				rightValue = realData

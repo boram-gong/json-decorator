@@ -3,7 +3,7 @@ module github.com/boram-gong/json-decorator
 go 1.16
 
 require (
-	github.com/boram-gong/db_tool v0.0.4-0.20220413090744-41e425c97f61
+	github.com/boram-gong/db_tool v0.0.4
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.5
 	github.com/gin-contrib/pprof v1.3.0
